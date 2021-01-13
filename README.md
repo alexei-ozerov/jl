@@ -1,9 +1,11 @@
 # jl: Jsonline Logger
 
-An application for deserializing jsonline stdout and filtering output based on: 
+A tool for deserializing jsonline stdout and filtering output based on: 
 
 - (1) log level (eg. info, warn, error, etc.)
 - (2) fields (eg. appName, message, etc.)
+
+Written in Rust using termion, serde_json, and clap. 
 
 Recommended usage:
 ```
