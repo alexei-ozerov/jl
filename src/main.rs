@@ -60,8 +60,8 @@ fn main() {
     let matches = clap_app!(jl =>
         (version: "0.3")
         (author: "Alexei Ozerov. <alexei.ozerov.7@gmail.com>")
-        (about: "Jsonline Logger.\n\nRecommended usage: kubectl logs -n <namespace> <pod name> | jl -l <level> -f <field1,field2,field3,etc> | less -r")
-        (@arg LEVEL: -l --level +required +takes_value "Log Level (eg. -l info)")
+        (about: "Jsonline Logger.\n\nRecommended usage: kubectl logs -n <namespace> <pod name> | jl -l <level1>,<level2> -f <field1,field2,field3,etc> | less -r")
+        (@arg LEVEL: -l --level +required +takes_value "Log Level: Comma Delimited (eg. -l info,error,warn)")
         (@arg FIELDS: -f --fields +takes_value "Log Filters: Comma Delimited (eg. -f field1,field2,field3")
     )
     .get_matches();
