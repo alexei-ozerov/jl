@@ -4,7 +4,7 @@ use serde_json::Value;
 use std::io::BufRead;
 use termion::color;
 
-// Check STDIN for JSON Input, Append Into Vector, Return To MAIN
+// Append STDIN Into Vector, Return To MAIN
 fn save_stdin() -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let stdin = std::io::stdin();
     let stdin = stdin.lock();
@@ -20,9 +20,18 @@ fn save_stdin() -> Result<Vec<String>, Box<dyn std::error::Error>> {
 }
 
 // Deserialize Jsonline String
-fn deserialize_string(json_string: &str, matches: &ArgMatches<'_>) {
+fn deserialize_jsonline(json_string: &str, matches: &ArgMatches<'_>) {
     let v: Value = serde_json::from_str(&json_string).unwrap();
-    if v["level"] == matches.value_of("LEVEL").unwrap() {
+    
+    // Get Info Vec
+    let mut _level_vec: Vec<&str> = Vec::new();
+    if let Some(l) = matches.value_of("LEVEL") {
+        let level_delimit = l.split(",");
+        _level_vec = level_delimit.collect();
+    }
+
+    // Filter Data & Print Results
+    if _level_vec.contains(&v["level"].as_str().unwrap()) {
         if let Some(f) = matches.value_of("FIELDS") {
             let comma_delimit = f.split(",");
             let fields_vec: Vec<&str> = comma_delimit.collect();
@@ -57,7 +66,7 @@ fn main() {
     )
     .get_matches();
 
-    // Deserialize JSON from STDIN
+    // Get Vec From STDIN
     let res = save_stdin();
     let res = match res {
         Ok(log_vec) => log_vec,
@@ -69,7 +78,7 @@ fn main() {
     for s in &res {
         // if jsonline
         if &s[..1] == "{" {
-            deserialize_string(&s, &matches);
+            deserialize_jsonline(&s, &matches);
         } else {
             // if contains jsonline
             if s.contains("{\"") {
@@ -78,7 +87,7 @@ fn main() {
                 for n in 0..split_vec.len() {
                     if split_vec[n].contains("\"}") {
                         let json_line = "{\"".to_owned() + &split_vec[n];
-                        deserialize_string(&json_line, &matches);
+                        deserialize_jsonline(&json_line, &matches);
                     } else {
                         println!(
                             "{}Warning, non-JSON Log Found:{}\n{}\n",
