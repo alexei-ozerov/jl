@@ -1,5 +1,4 @@
 use clap::clap_app;
-use clap::ArgMatches;
 use serde_json::Value;
 use std::io::BufRead;
 use termion::color;
@@ -20,39 +19,28 @@ fn save_stdin() -> Result<Vec<String>, Box<dyn std::error::Error>> {
 }
 
 // Deserialize Jsonline String
-fn deserialize_jsonline(json_string: &str, matches: &ArgMatches<'_>) {
+fn deserialize_jsonline(json_string: &str, _level_vec: &Vec<&str>, _fields_vec: &Vec<&str>) {
     let v: Value = serde_json::from_str(&json_string).unwrap();
-    
-    // Get Info Vec
-    let mut _level_vec: Vec<&str> = Vec::new();
-    if let Some(l) = matches.value_of("LEVEL") {
-        let level_delimit = l.split(",");
-        _level_vec = level_delimit.collect();
-    }
 
     // Filter Data & Print Results
     if _level_vec.contains(&v["level"].as_str().unwrap()) {
-        if let Some(f) = matches.value_of("FIELDS") {
-            let comma_delimit = f.split(",");
-            let fields_vec: Vec<&str> = comma_delimit.collect();
-            for e in fields_vec {
-                println!(
-                    "{}{}:{} {},",
-                    color::Fg(color::Red),
-                    e,
-                    color::Fg(color::Reset),
-                    v[e],
-                );
-            }
+        for e in _fields_vec {
             println!(
-                "{}timestamp:{} {}\n",
+                "{}{}:{} {},",
                 color::Fg(color::Red),
+                e,
                 color::Fg(color::Reset),
-                v["timestamp"]
+                v[e],
             );
-        } else {
-            println!("\n{}", v);
         }
+        println!(
+            "{}timestamp:{} {}\n",
+            color::Fg(color::Red),
+            color::Fg(color::Reset),
+            v["timestamp"]
+        );
+    } else {
+        println!("\n{}", v);
     }
 }
 
@@ -73,12 +61,26 @@ fn main() {
         Err(error) => panic!("FATAL ERROR: {}", error),
     };
 
+    // Get Info Vec
+    let mut _level_vec: Vec<&str> = Vec::new();
+    if let Some(l) = matches.value_of("LEVEL") {
+        let level_delimit = l.split(",");
+        _level_vec = level_delimit.collect();
+    }
+
+    // Get Fields Vec
+    let mut _fields_vec: Vec<&str> = Vec::new();
+    if let Some(f) = matches.value_of("FIELDS") {
+        let field_delimit = f.split(",");
+        _fields_vec = field_delimit.collect();
+    }
+
     // Determine Output
     println!("\n");
     for s in &res {
         // if jsonline
         if &s[..1] == "{" {
-            deserialize_jsonline(&s, &matches);
+            deserialize_jsonline(&s, &_level_vec, &_fields_vec);
         } else {
             // if contains jsonline
             if s.contains("{\"") {
@@ -87,7 +89,7 @@ fn main() {
                 for n in 0..split_vec.len() {
                     if split_vec[n].contains("\"}") {
                         let json_line = "{\"".to_owned() + &split_vec[n];
-                        deserialize_jsonline(&json_line, &matches);
+                        deserialize_jsonline(&json_line, &_level_vec, &_fields_vec);
                     } else {
                         println!(
                             "{}Warning, non-JSON Log Found:{}\n{}\n",
