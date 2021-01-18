@@ -99,7 +99,7 @@ fn main() {
                 }
             } else {
                 println!(
-                    "{}Warning, non-JSON Log Found:{}\n{}",
+                    "{}Warning, non-JSON Log Found:{}\n{}\n",
                     color::Fg(color::Yellow),
                     color::Fg(color::Reset),
                     &s
