@@ -39,8 +39,6 @@ fn deserialize_jsonline(json_string: &str, _level_vec: &Vec<&str>, _fields_vec: 
             color::Fg(color::Reset),
             v["timestamp"]
         );
-    } else {
-        println!("\n{}", v);
     }
 }
 
