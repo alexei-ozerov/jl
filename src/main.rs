@@ -23,22 +23,66 @@ fn deserialize_jsonline(json_string: &str, _level_vec: &Vec<&str>, _fields_vec: 
     let v: Value = serde_json::from_str(&json_string).unwrap();
 
     // Filter Data & Print Results
-    if _level_vec.contains(&v["level"].as_str().unwrap()) {
-        for e in _fields_vec {
-            println!(
-                "{}{}:{} {},",
-                color::Fg(color::Red),
-                e,
-                color::Fg(color::Reset),
-                v[e],
-            );
+    if _level_vec.len() > 0 {
+        if _level_vec.contains(&v["level"].as_str().unwrap()) {
+            if _fields_vec.len() > 0 {
+                for e in _fields_vec {
+                    println!(
+                        "{}{}:{} {},",
+                        color::Fg(color::Red),
+                        e,
+                        color::Fg(color::Reset),
+                        v[e],
+                    );
+                }
+                println!(
+                    "{}timestamp:{} {}\n",
+                    color::Fg(color::Red),
+                    color::Fg(color::Reset),
+                    v["timestamp"]
+                );
+            } else {
+                for (key, value) in v.as_object().unwrap() {
+                    println!(
+                        "{}{}:{} {}",
+                        color::Fg(color::Red),
+                        key,
+                        color::Fg(color::Reset),
+                        value
+                    );
+                }
+                println!("");
+            }
         }
-        println!(
-            "{}timestamp:{} {}\n",
-            color::Fg(color::Red),
-            color::Fg(color::Reset),
-            v["timestamp"]
-        );
+    } else {
+        if _fields_vec.len() > 0 {
+            for e in _fields_vec {
+                println!(
+                    "{}{}:{} {},",
+                    color::Fg(color::Red),
+                    e,
+                    color::Fg(color::Reset),
+                    v[e],
+                );
+            }
+            println!(
+                "{}timestamp:{} {}\n",
+                color::Fg(color::Red),
+                color::Fg(color::Reset),
+                v["timestamp"]
+            );
+        } else {
+            for (key, value) in v.as_object().unwrap() {
+                println!(
+                    "{}{}:{} {}",
+                    color::Fg(color::Red),
+                    key,
+                    color::Fg(color::Reset),
+                    value
+                );
+            }
+            println!("");
+        }
     }
 }
 
@@ -47,7 +91,7 @@ fn main() {
         (version: "0.3")
         (author: "Alexei Ozerov. <alexei.ozerov.7@gmail.com>")
         (about: "Jsonline Logger.\n\nRecommended usage: kubectl logs -n <namespace> <pod name> | jl -l <level1>,<level2> -f <field1,field2,field3,etc> | less -r")
-        (@arg LEVEL: -l --level +required +takes_value "Log Level: Comma Delimited (eg. -l info,error,warn)")
+        (@arg LEVEL: -l --level +takes_value "Log Level: Comma Delimited (eg. -l info,error,warn)")
         (@arg FIELDS: -f --fields +takes_value "Log Filters: Comma Delimited (eg. -f field1,field2,field3")
     )
     .get_matches();
